@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { userRouter } from "./routes/user.route.js";
+import { courseRouter } from "./routes/Course.route.js";
 
 const app = express();
 
@@ -24,6 +25,8 @@ app.use(express.static("public"))
 app.use(cookieParser())
 
 app.use('/api1/v1/users',userRouter)
+
+app.use('/api1/v1/courses',courseRouter)
 
 app.get('/',(req,res) => {
     res.send("all is ok")
