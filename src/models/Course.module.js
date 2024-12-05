@@ -7,10 +7,12 @@ const courseSchema = new Schema ({
     },
     subTitle : {
         type : String,
+        default:""
         // required : true
     },
     description : {
-        type : String
+        type : String,
+        default:""
     },
     category : {
         type : String,
@@ -18,14 +20,17 @@ const courseSchema = new Schema ({
     },
     courseLevel : {
         type : String,
-        enum : ["beginner" , "medium" , "advance"]
+        enum : ["beginner" , "medium" , "advance"],
+        
     },
     coursePrice : {
         type : Number,
+        default:''
         // required : true,
     },
-    coureseThumbnail : {
-        type : String
+    courseThumbnail : {
+        type : String,
+        default:""
     },
     enrolledStudents : [
         {
@@ -51,6 +56,7 @@ const courseSchema = new Schema ({
 {
     timestamps : true
 }
+
 )
  
 
