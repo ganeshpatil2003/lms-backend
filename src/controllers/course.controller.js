@@ -3,6 +3,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { Course } from "../models/Course.module.js";
 import {
   deleteFromCloudinary,
+  deleteVideoFromClodinary,
   uploadOnCloudinary,
 } from "../utils/uploadOnCloudinary.js";
 import { Lecture } from "../models/Lecture.module.js";
@@ -117,6 +118,66 @@ const getCourseById = asyncHandeler(async (req, res) => {
     .json(new ApiResponse(200, course, "Course fetched successfully."));
 });
 
+//toggel Publish course
+
+const toggelPublishCourse = asyncHandeler(async (req, res) => {
+  const { courseId } = req.params;
+  const { publish } = req.query;
+
+  const course = await Course.findById(courseId);
+  if (!course) {
+    return res
+      .status(400)
+      .json(new ApiResponse(400, {}, "Course didn't found."));
+  }
+
+  course.isPublished = publish === "true";
+  await course.save();
+  const statusMessage = course.isPublished ? "Published" : "Unpublished";
+
+  return res.status(200).json(new ApiResponse(200,course,statusMessage));
+});
+
+const getPublishedCourses = asyncHandeler(async(req,res) => {
+  const courses = await Course.aggregate([
+    {
+      $match : {
+        isPublished : true
+      }
+    },
+    {
+      $lookup : {
+        from: "users",
+        localField:'creator',
+        foreignField:'_id',
+        as : "creator",
+        pipeline:[
+          {
+            $project : {
+              username : 1,
+              email : 1,
+              avatar : 1,
+            }
+          }
+        ]
+      }
+    },
+    {
+      $addFields :{
+        creator : {
+          $first : "$creator"
+        }
+        
+      }
+    }]
+    )
+  if(!courses){
+    return res.status(404).json(new ApiResponse(404,{},'No courses found'))
+  } 
+  console.log(courses)
+  return res.status(200).json( new ApiResponse(200,courses,"Courses fetched successfully."))
+})
+
 //.............................................................Lecture controllers.................................................................
 
 const createLecture = asyncHandeler(async (req, res) => {
@@ -158,7 +219,7 @@ const createLecture = asyncHandeler(async (req, res) => {
 });
 
 const getCourseLectures = asyncHandeler(async (req, res) => {
-  const {courseId} = req.params;
+  const { courseId } = req.params;
   const course = await Course.aggregate([
     {
       $match: {
@@ -181,12 +242,12 @@ const getCourseLectures = asyncHandeler(async (req, res) => {
       },
     },
     {
-      $project : {
-        lectures : 1,
-        totalLectures : 1,
-        courseTitle : 1,
-      }
-    }
+      $project: {
+        lectures: 1,
+        totalLectures: 1,
+        courseTitle: 1,
+      },
+    },
   ]);
   console.log(course);
   if (!course)
@@ -196,15 +257,86 @@ const getCourseLectures = asyncHandeler(async (req, res) => {
     .json(new ApiResponse(200, course, "Lectures fetched successfully"));
 });
 
-const updateLecture = asyncHandeler(async(req,res) => {
-  const videoLocalPath = req.file?.path;
-  const {lectureTitle,isPriviewFree} = req.body;
-})
+const updateLecture = asyncHandeler(async (req, res) => {
+  const { lectureId, courseId } = req.params;
+  const { lectureTitle, isPriviewFree, videoInfo } = req.body;
+  console.log(
+    lectureTitle,
+    "lecturetitle/n",
+    isPriviewFree,
+    "videoinfo/n",
+    videoInfo
+  );
+  // console.log(lectureTitle,isPriviewFree,videoInfo)
+  const lecture = await Lecture.findById(lectureId);
+  if (!lecture) {
+    return res
+      .status(404)
+      .json(new ApiResponse(404, {}, "Lecture not updated"));
+  }
+  if (videoInfo !== null) {
+    if (videoInfo?.videoUrl !== null) lecture.videoUrl = videoInfo.videoUrl;
+    if (videoInfo.publicId !== null) lecture.publicId = videoInfo.publicId;
+  }
+
+  if (isPriviewFree === false || true) lecture.isPriviewFree = isPriviewFree;
+  if (lectureTitle) lecture.lectureTitle = lectureTitle;
+  await lecture.save();
+
+  const course = await Course.findById(courseId);
+  if (course && !course.lectures.includes(lecture._id)) {
+    course.lectures.push(lecture._id);
+    await course.save();
+  }
+  console.log(lecture);
+  return res
+    .status(200)
+    .json(new ApiResponse(200, lecture, "Lecture updated."));
+});
+
+const removeLecture = asyncHandeler(async (req, res) => {
+  const { lectureId } = req.params;
+  const lecture = await Lecture.findByIdAndDelete(lectureId); // delete lecture from mongodb
+  if (lecture.publicId) await deleteVideoFromClodinary(publicId); // remove video from cloudinary
+  const course = await Course.updateOne(
+    { lectures: lectureId }, // finds the lectures id in lectures array
+    {
+      $pull: { lectures: lectureId }, // remove the lectures id from lectures array
+    }
+  );
+  if (!lecture) {
+    return res
+      .status(400)
+      .json(new ApiResponse(400, {}, "Lecture didn't deleted"));
+  }
+  console.log(lecture);
+  return res
+    .status(200)
+    .json(new ApiResponse(200, lecture, "Lecture removed."));
+});
+
+const getLectureById = asyncHandeler(async (req, res) => {
+  const { lectureId } = req.params;
+  const lecture = await Lecture.findById(lectureId);
+  if (!lecture) {
+    return res.status(404).json(404, {}, "Lecture not found");
+  }
+  // console.log(lecture)
+  return res
+    .status(200)
+    .json(new ApiResponse(200, lecture, "Lecture fetched succssfully."));
+});
+
 export {
   createCourse,
   getCreatorCourses,
   updateCourse,
   getCourseById,
+  toggelPublishCourse,
+  getPublishedCourses,
   createLecture,
-  getCourseLectures
+  getCourseLectures,
+  updateLecture,
+  removeLecture,
+  getLectureById,
 };
