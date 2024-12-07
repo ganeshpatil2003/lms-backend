@@ -30,6 +30,6 @@ courseRouter
 
 courseRouter
   .route("/getpublished-courses")
-  .get(authenticateUser, getPublishedCourses);
+  .get(getPublishedCourses);
 
 export { courseRouter };

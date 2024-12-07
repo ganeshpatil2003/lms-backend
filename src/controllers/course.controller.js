@@ -107,6 +107,7 @@ const updateCourse = asyncHandeler(async (req, res) => {
 
 const getCourseById = asyncHandeler(async (req, res) => {
   const courseId = req.params.courseId;
+  // console.log(courseId)
   const course = await Course.findById(courseId);
   if (!course) {
     return res
