@@ -6,6 +6,7 @@ import { courseRouter } from "./routes/Course.route.js";
 import { lectureRouter } from "./routes/lecture.routes.js";
 import { mediaRouter } from "./routes/media.route.js";
 import { purchaseRouter } from "./routes/Purchase.routes.js";
+import { processRouter } from "./routes/courseProgress.routes.js";
 
 const app = express();
 
@@ -37,8 +38,11 @@ app.use('/api1/v1/media',mediaRouter)
 
 app.use('/api1/v1/purchase',purchaseRouter)
 
-app.get('/',(req,res) => {
+app.use('/api1/v1/process',processRouter)
+
+app.get('/',(_,res) => {
     res.send("all is ok")
 })
+
 
 export {app};
