@@ -128,10 +128,11 @@ const logOutUser = asyncHandeler(async (req, res) => {
     .json(new ApiResponse(200, {}, "User Loggedout"));
 });
 
-const getUserDetails = asyncHandeler((req, res) => {
+const getUserDetails = asyncHandeler(async (req, res) => {
+  const user = await User.findById(req.user._id).populate('enrolledCourses').select("-password -refreshToken")
   return res
     .status(200)
-    .json(new ApiResponse(200, req.user, "User details fetched successfully."));
+    .json(new ApiResponse(200, user, "User details fetched successfully."));
 });
 
 const updateUserDetails = asyncHandeler(async (req, res) => {

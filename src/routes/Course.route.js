@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   createCourse,
+  createSearchCourse,
   getCourseById,
   getCreatorCourses,
   getPublishedCourses,
@@ -16,6 +17,8 @@ courseRouter.route("/create-course").post(authenticateUser, createCourse);
 
 courseRouter.route("/get-courses").get(authenticateUser, getCreatorCourses);
 
+courseRouter.route("/search").get(authenticateUser, createSearchCourse);
+
 courseRouter
   .route("/update-course/:courseId")
   .patch(authenticateUser, upload.single("courseThumbnail"), updateCourse);
@@ -28,8 +31,6 @@ courseRouter
   .route("/publish-toggel/:courseId")
   .patch(authenticateUser, toggelPublishCourse);
 
-courseRouter
-  .route("/getpublished-courses")
-  .get(getPublishedCourses);
+courseRouter.route("/getpublished-courses").get(getPublishedCourses);
 
 export { courseRouter };

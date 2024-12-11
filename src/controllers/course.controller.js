@@ -136,49 +136,84 @@ const toggelPublishCourse = asyncHandeler(async (req, res) => {
   await course.save();
   const statusMessage = course.isPublished ? "Published" : "Unpublished";
 
-  return res.status(200).json(new ApiResponse(200,course,statusMessage));
+  return res.status(200).json(new ApiResponse(200, course, statusMessage));
 });
 
-const getPublishedCourses = asyncHandeler(async(req,res) => {
+const getPublishedCourses = asyncHandeler(async (req, res) => {
   const courses = await Course.aggregate([
     {
-      $match : {
-        isPublished : true
-      }
+      $match: {
+        isPublished: true,
+      },
     },
     {
-      $lookup : {
+      $lookup: {
         from: "users",
-        localField:'creator',
-        foreignField:'_id',
-        as : "creator",
-        pipeline:[
+        localField: "creator",
+        foreignField: "_id",
+        as: "creator",
+        pipeline: [
           {
-            $project : {
-              username : 1,
-              email : 1,
-              avatar : 1,
-            }
-          }
-        ]
-      }
+            $project: {
+              username: 1,
+              email: 1,
+              avatar: 1,
+            },
+          },
+        ],
+      },
     },
     {
-      $addFields :{
-        creator : {
-          $first : "$creator"
-        }
-        
-      }
-    }]
-    )
-  if(!courses){
-    return res.status(404).json(new ApiResponse(404,{},'No courses found'))
-  } 
-  console.log(courses)
-  return res.status(200).json( new ApiResponse(200,courses,"Courses fetched successfully."))
-})
+      $addFields: {
+        creator: {
+          $first: "$creator",
+        },
+      },
+    },
+  ]);
+  if (!courses) {
+    return res.status(404).json(new ApiResponse(404, {}, "No courses found"));
+  }
+  console.log(courses);
+  return res
+    .status(200)
+    .json(new ApiResponse(200, courses, "Courses fetched successfully."));
+});
 
+const createSearchCourse = asyncHandeler(async (req, res) => {
+  const { query = "", categories = [], sortByPrice = "" } = req.query;
+
+  // create seach query
+  const searchOptions = {
+    isPublished: true,
+    $or: [
+      { courseTitle: { $regex: query, $options: "i" } },
+      { subTitle: { $regex: query, $options: "i" } },
+      { category: { $regex: query, $options: "i" } },
+    ],
+  };
+
+  if (categories.length > 0) {
+    searchOptions.category = { $in: categories };
+  }
+  //define sorting order
+  const sortOptions = {};
+  if (sortByPrice === "low") {
+    sortOptions.coursePrice = 1; // ascending order
+  } else if (sortByPrice === "high") {
+    sortOptions.coursePrice = -1; // descending
+  }
+
+  const courses = await Course.find(searchOptions)
+    .populate({ path: "creator", select: "username avatar" })
+    .sort(sortOptions);
+
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, courses || [], "Search result fetched successfully.")
+    );
+});
 //.............................................................Lecture controllers.................................................................
 
 const createLecture = asyncHandeler(async (req, res) => {
@@ -340,4 +375,5 @@ export {
   updateLecture,
   removeLecture,
   getLectureById,
+  createSearchCourse
 };
