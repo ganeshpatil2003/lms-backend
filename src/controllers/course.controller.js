@@ -61,7 +61,7 @@ const updateCourse = asyncHandeler(async (req, res) => {
   const couresThumbnail = req.file?.path;
   const courseId = req.params.courseId;
 
-  // console.log(courseTitle)
+
   const course = await Course.findById(courseId);
   if (!course) {
     return res
@@ -97,9 +97,7 @@ const updateCourse = asyncHandeler(async (req, res) => {
       .status(400)
       .json(new ApiResponse(400, {}, "Course didn't updated."));
   }
-  // console.log(updatedCourse,'=========================>>>>>>>>>>>>>>>>>>>>>>>')
-  // console.log("updated data",updatedData)
-  // console.log(req.body);
+
   return res
     .status(200)
     .json(new ApiResponse(200, updatedCourse, "Course Updated successfully."));
@@ -107,7 +105,7 @@ const updateCourse = asyncHandeler(async (req, res) => {
 
 const getCourseById = asyncHandeler(async (req, res) => {
   const courseId = req.params.courseId;
-  // console.log(courseId)
+
   const course = await Course.findById(courseId);
   if (!course) {
     return res
@@ -174,7 +172,7 @@ const getPublishedCourses = asyncHandeler(async (req, res) => {
   if (!courses) {
     return res.status(404).json(new ApiResponse(404, {}, "No courses found"));
   }
-  console.log(courses);
+
   return res
     .status(200)
     .json(new ApiResponse(200, courses, "Courses fetched successfully."));
@@ -219,8 +217,7 @@ const createSearchCourse = asyncHandeler(async (req, res) => {
 const createLecture = asyncHandeler(async (req, res) => {
   const { lectureTitle } = req.body;
   const { courseId } = req.params;
-  // console.log(lectureTitle, courseId);
-  // console.log(req.body)
+
   if (!(lectureTitle && courseId)) {
     {
       return res
@@ -285,7 +282,7 @@ const getCourseLectures = asyncHandeler(async (req, res) => {
       },
     },
   ]);
-  console.log(course);
+ 
   if (!course)
     return res.status(400).json(new ApiResponse(400, {}, "Lectures not found"));
   return res
@@ -296,14 +293,7 @@ const getCourseLectures = asyncHandeler(async (req, res) => {
 const updateLecture = asyncHandeler(async (req, res) => {
   const { lectureId, courseId } = req.params;
   const { lectureTitle, isPriviewFree, videoInfo } = req.body;
-  console.log(
-    lectureTitle,
-    "lecturetitle/n",
-    isPriviewFree,
-    "videoinfo/n",
-    videoInfo
-  );
-  // console.log(lectureTitle,isPriviewFree,videoInfo)
+
   const lecture = await Lecture.findById(lectureId);
   if (!lecture) {
     return res
@@ -324,7 +314,7 @@ const updateLecture = asyncHandeler(async (req, res) => {
     course.lectures.push(lecture._id);
     await course.save();
   }
-  console.log(lecture);
+
   return res
     .status(200)
     .json(new ApiResponse(200, lecture, "Lecture updated."));
@@ -345,7 +335,7 @@ const removeLecture = asyncHandeler(async (req, res) => {
       .status(400)
       .json(new ApiResponse(400, {}, "Lecture didn't deleted"));
   }
-  console.log(lecture);
+
   return res
     .status(200)
     .json(new ApiResponse(200, lecture, "Lecture removed."));
@@ -357,7 +347,7 @@ const getLectureById = asyncHandeler(async (req, res) => {
   if (!lecture) {
     return res.status(404).json(404, {}, "Lecture not found");
   }
-  // console.log(lecture)
+
   return res
     .status(200)
     .json(new ApiResponse(200, lecture, "Lecture fetched succssfully."));

@@ -26,7 +26,7 @@ const createAccessandRefreshToken = async function (id) {
 };
 const registerUser = asyncHandeler(async (req, res) => {
   const { username, email, password } = req.body;
-  console.log(req.body);
+
 
   if (!(username && email && password)) {
     // throw new ApiError(400, "All fields are required");
@@ -137,9 +137,9 @@ const getUserDetails = asyncHandeler(async (req, res) => {
 
 const updateUserDetails = asyncHandeler(async (req, res) => {
   const { username } = req.body;
-  // console.log(username)
+
   const avatarLocalPath = req.file?.path;
-  // console.log("filepath",avatarLocalPath)
+
 
   if ([username].some((field) => field.trim() === "")) {
     return res

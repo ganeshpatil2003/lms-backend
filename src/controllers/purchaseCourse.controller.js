@@ -8,7 +8,7 @@ import mongoose from "mongoose";
 const purchaseCourse = asyncHandeler(async (req, res) => {
   const { courseId } = req.params;
   const { user } = req;
-    // console.log(user)
+
   const course = await Course.findById(courseId);
   const purchasCourse = await PurchaseCourse.create({
     courseId: course._id,
@@ -24,29 +24,29 @@ const purchaseCourse = asyncHandeler(async (req, res) => {
   course.enrolledStudents.push(user._id);
   await course.save();
   await purchasCourse.populate("courseId");
-    // console.log(purchasCourse)
+
   if (purchasCourse.courseId && purchasCourse.courseId.lectures.length > 0) {
     const lectures = await Lecture.updateMany(
       { _id: { $in: purchasCourse.courseId.lectures } },
       { $set: { isPriviewFree: true } }
     );
-    console.log(course)
+
   }
   const user2 = await User.findByIdAndUpdate(
     user._id,
     {
-      $set: {
+    
         $push: {
           enrolledCourses: purchasCourse.courseId._id,
         },
-      },
+      
     },
     {
       new: true,
     }
   );
-  // console.log(user2)
-  return res.status(200).json( new ApiResponse(200,{},"Course purchased"));
+
+  return res.status(200).json( new ApiResponse(200,user2,"Course purchased"));
 });
 
 const purchaseCourseDeatils = asyncHandeler(async(req,res) => {
@@ -122,5 +122,12 @@ const purchaseCourseDeatils = asyncHandeler(async(req,res) => {
     return res.status(200).json(new ApiResponse(200,{course:course[0],purchase : purchase ? true : false},"Course fetched."))
 })
 
+const getAllPurchaseCourses = asyncHandeler(async(req,res) => {
+  const id = req.user._id;
+  const allCourses = await PurchaseCourse.find({userId:id,status : 'completed'}).populate("courseId");
 
-export {purchaseCourse,purchaseCourseDeatils}
+  return res.status(200).json(new ApiResponse(200,allCourses,"Fetched purchased courses."))
+})
+
+
+export {purchaseCourse,purchaseCourseDeatils,getAllPurchaseCourses}

@@ -13,7 +13,6 @@ const getCourseProgress = asyncHandeler(async (req, res) => {
   const course = await Course.findById(courseId).populate("lectures");
   //step-2 if not courseprogress ,return course details with empty array
   if (!courseProgress) {
-    // console.log("course not found")
     return res.status(200).json(
       new ApiResponse(200, {
         lectureProgress: [],
@@ -82,7 +81,7 @@ const updateLectureProgress = asyncHandeler(async (req, res) => {
     (lecture) => lecture.viewed === true
   );
 
-  // console.log(course.lectures)
+ 
   if (course.lectures.length === lectureProgressLength.length) {
     courseProgress.completed = true;
   }
@@ -91,7 +90,7 @@ const updateLectureProgress = asyncHandeler(async (req, res) => {
   };
 
   await courseProgress.save();
-//   console.log(courseProgress.course.lectures)
+
 
   return res
     .status(200)
@@ -100,7 +99,7 @@ const updateLectureProgress = asyncHandeler(async (req, res) => {
 
 const markAsComplete = asyncHandeler(async (req, res) => {
   const { courseId } = req.params;
-  // console.log('complete process',userId)
+ 
   const userId = req.user._id;
 
   const courseProgress = await CourseProgress.findOne({ courseId, userId });
